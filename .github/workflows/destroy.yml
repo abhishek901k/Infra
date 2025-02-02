@@ -1,13 +1,14 @@
-name: Deploy Infrastructure
+name: Terraform Destroy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  destroy:
     runs-on: ubuntu-latest
+    name: Terraform Destroy
+    needs: plan
+    if: ${{ github.ref == 'refs/heads/main' }}
 
     steps:
       - name: Check out code
@@ -26,7 +27,6 @@ jobs:
           sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
           sudo apt-get update && sudo apt-get install terraform
 
-      - name: Terraform Init and Apply
+      - name: Terraform Destroy
         run: |
-          terraform init
-          terraform apply -auto-approve
+          terraform destroy -auto-approve
