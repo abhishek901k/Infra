@@ -10,9 +10,39 @@ on:
   workflow_dispatch:
 
 jobs:
+  tflint:
+    name: Run TFLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install TFLint
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      - name: Run TFLint
+        run: tflint
+
+  tfsec:
+    name: Run tfsec
+    runs-on: ubuntu-latest
+    needs: tflint
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Run tfsec
+        run: tfsec .
+
   plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
+    needs: tfsec
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
