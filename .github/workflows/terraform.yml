@@ -1,22 +1,17 @@
-name: Terraform Workflow
+name: Terraform Infrastructure Workflow
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
   workflow_dispatch:
 
 jobs:
   plan:
-    runs-on: ubuntu-latest
     name: Terraform Plan
-    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up AWS credentials
@@ -26,32 +21,33 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      - name: Install Terraform
-        run: |
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt-get update && sudo apt-get install terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
 
       - name: Terraform Init
         run: terraform init
 
       - name: Terraform Plan
+        id: plan
         run: terraform plan -out=tfplan
 
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan
+          name: terraform-plan
           path: tfplan
 
   apply:
-    runs-on: ubuntu-latest
     name: Terraform Apply
+    runs-on: ubuntu-latest
     needs: plan
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
+    environment:
+      name: prod
+      url: https://305158154905.signin.aws.amazon.com/console
     steps:
-      - name: Check out code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up AWS credentials
@@ -61,16 +57,46 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      - name: Install Terraform
-        run: |
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt-get update && sudo apt-get install terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init
 
       - name: Download Terraform Plan
         uses: actions/download-artifact@v4
         with:
-          name: tfplan
+          name: terraform-plan
 
       - name: Terraform Apply
-        run: terraform apply tfplan
+        run: terraform apply -auto-approve tfplan
+
+  destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    needs: apply
+    environment:
+      name: prod
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
