@@ -33,5 +33,5 @@ jobs:
       - name: Upload Terraform Plan as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan-${{ github.run_id }}
+          name: terraform-plan
           path: terraform.plan
