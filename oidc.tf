@@ -43,7 +43,10 @@ resource "aws_iam_policy" "ecr_ecs_policy" {
       {
         Action = [
           "ecr:GetAuthorizationToken",
+          "ecr:InitiateLayerUpload",
           "ecr:BatchCheckLayerAvailability",
+          "ecr:CompleteLayerUpload",
+          "ecr:UploadLayerPart",
           "ecr:GetRepositoryPolicy",
           "ecr:ListImages",
           "ecr:DescribeRepositories",
