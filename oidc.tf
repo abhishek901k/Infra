@@ -22,8 +22,10 @@ resource "aws_iam_role" "github_oidc_role" {
         "Action": "sts:AssumeRoleWithWebIdentity",
         "Condition": {
           "StringEquals": {
-            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-            "token.actions.githubusercontent.com:sub": "repo:abhishek901k/MusicApp:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          },
+          "StringLike": {
+            "token.actions.githubusercontent.com:sub": "repo:abhishek901k/MusicApp:environment:aws"
           }
         }
       }
