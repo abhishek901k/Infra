@@ -12,6 +12,18 @@
       "action": {
         "type": "expire"
       }
+    },
+    {
+      "rulePriority": 2,
+      "description": "Expire images when there are more than 2 images",
+      "selection": {
+        "tagStatus": "any",
+        "countType": "imageCountMoreThan",
+        "countNumber": 1
+      },
+      "action": {
+        "type": "expire"
+      }
     }
   ]
 }
