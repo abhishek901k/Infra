@@ -1,16 +1,3 @@
-provider "aws" {
-  region = "ap-south-1"
-}
-
-terraform {
-  backend "s3" {
-    bucket = "abhishek-infra-github"
-    key    = "infra/github/terraform.tfstate"
-    region = "ap-south-1"
-    encrypt = true
-  }
-}
-
 resource "aws_iam_openid_connect_provider" "github_oidc_provider" {
   url = "https://token.actions.githubusercontent.com"
   client_id_list = [
