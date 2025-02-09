@@ -4,7 +4,7 @@ resource "aws_iam_openid_connect_provider" "github_oidc_provider" {
     "sts.amazonaws.com",
   ]
   thumbprint_list = [
-    "5b6df07c2b8a3d6bcd1f39a7f55d9a8aef0ccf1c"
+    "d89e3bd43d5d909b47a18977aa9d5ce36cee184c"
   ]
 }
 
@@ -12,20 +12,18 @@ resource "aws_iam_role" "github_oidc_role" {
   name = "github_oidc_role_for_ecr_ecs"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
+    "Version": "2012-10-17",
+    "Statement": [
       {
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.github_oidc_provider.arn
-        }
-        Condition = {
-          StringEquals = {
-            "token.actions.githubusercontent.com:sub" = [
-              "repo:abhishek901k/Infra:ref:refs/heads/main",
-              "repo:abhishek901k/MusicApp:ref:refs/heads/main"
-            ]
+        "Effect": "Allow",
+        "Principal": {
+          "Federated": "arn:aws:iam::305158154905:oidc-provider/token.actions.githubusercontent.com"
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+          "StringEquals": {
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub": "repo:abhishek901k/MusicApp:ref:refs/heads/main"
           }
         }
       }
